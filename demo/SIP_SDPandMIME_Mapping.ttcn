@@ -1,0 +1,72 @@
+/******************************************************************************
+* Copyright (c) 2005, 2015  Ericsson AB
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
+*
+* Contributors:
+* Gabor Szalai
+* Attila Balasko
+* Julianna Majer
+******************************************************************************/
+//  File:               SIP_SDPandMIME_Mapping.ttcn
+//  Rev:                R5A
+//  Prodnr:             CNL 113 352
+//  Reference:          RFC2045, RFC2046 
+
+module SIP_SDPandMIME_Mapping{
+
+import from SIPmsg_Types all;
+import from MIME_Types all;
+import from SDP_Types all;
+import from uri_etsi_org_ngn_params_xml_simservs_sci all;
+
+external function f_SIP_add_message_body_adv(inout MessageHeader headers,
+  in ASP_SIP_body_content_advanced contents) return charstring;
+external function f_SIP_add_message_body(inout MessageHeader headers,
+  in ASP_SIP_body_content contents) return charstring;
+external function f_SIP_get_message_body(in MessageHeader headers,
+  in charstring body) return ASP_SIP_body_content;
+external function f_SIP_get_message_body_adv(in MessageHeader headers,
+  in charstring body) return ASP_SIP_body_content_advanced;
+external function f_MIME_generate_delimiter() return charstring;
+
+group Mapping_Types{
+  type record MIME_SIP_mapping_type{
+    MIME_FIELD_Content_type       content_type optional,
+    MIME_FIELD_Content_encoding   content_encoding optional,
+    MIME_FIELD_Other_field_list   other_fields optional
+  }
+  
+  type record SDP_SIP_mapping_type{
+    SDP_Message             SDP_message,
+    MIME_SIP_mapping_type   MIME_header optional
+  }
+  
+  type record ISUP_SIP_mapping_type{
+    octetstring             ISUP_message,
+    MIME_SIP_mapping_type   MIME_header optional
+  }
+  
+  type record AOC_SIP_mapping_type {
+    MessageType             AOC_message,
+    MIME_SIP_mapping_type   MIME_header optional
+  }
+  
+  type record ASP_SIP_body_content_advanced{
+    SDP_SIP_mapping_type    SDP_message optional,
+    ISUP_SIP_mapping_type   ISUP_message optional,
+    AOC_SIP_mapping_type    AOC_message optional,
+    ASP_MIME_message_list   other_messages optional
+  }
+  
+  type record ASP_SIP_body_content{
+    SDP_Message             SDP_message optional,
+    octetstring             ISUP_message optional,
+    MessageType             AOC_message optional,
+    ASP_MIME_message_list   other_messages optional
+  }
+  
+} // Mapping_Types
+}
