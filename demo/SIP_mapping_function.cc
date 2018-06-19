@@ -12,7 +12,7 @@
 ******************************************************************************/
 //
 //  File:               SIP_mapping_functions.cc
-//  Rev:                R5A
+//  Rev:                R6A
 //  Prodnr:             CNL 113 352
 //  Reference:          RFC2045, RFC2046 
 

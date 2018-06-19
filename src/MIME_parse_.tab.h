@@ -1,36 +1,19 @@
-/******************************************************************************
-* Copyright (c) 2005, 2015  Ericsson AB
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* Gabor Szalai
-* Attila Balasko
-* Julianna Majer
-******************************************************************************/
-//
-//  File:               MIME_parse.y
-//  Rev:                R5A
-//  Prodnr:             CNL 113 352
-//  Reference:          RFC2045, RFC2046
-/* A Bison parser, made by GNU Bison 2.5.  */
+/* A Bison parser, made by GNU Bison 3.0.2.  */
 
 /* Bison interface for Yacc-like parsers in C
-   
-      Copyright (C) 1984, 1989-1990, 2000-2011 Free Software Foundation, Inc.
-   
+
+   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
+
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
@@ -43,53 +26,58 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-   
+
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-
-/* Tokens.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-   /* Put the tokens into the symbol table, so that GDB and other debuggers
-      know about them.  */
-   enum yytokentype {
-     _TOKEN = 258,
-     _STOKEN = 259,
-     _CRLF = 260,
-     SLASH = 261,
-     EQSIGN = 262,
-     LONE_CRLF = 263,
-     LWS = 264,
-     SEMICOLON = 265,
-     CONTENTTYPE = 266,
-     CONETNTCODEING = 267,
-     EXT_HEADER = 268
-   };
+#ifndef YY_MIME_PARSE_MIME_PARSE_TAB_H_INCLUDED
+# define YY_MIME_PARSE_MIME_PARSE_TAB_H_INCLUDED
+/* Debug traces.  */
+#ifndef YYDEBUG
+# define YYDEBUG 0
+#endif
+#if YYDEBUG
+extern int MIME_parse_debug;
 #endif
 
+/* Token type.  */
+#ifndef YYTOKENTYPE
+# define YYTOKENTYPE
+  enum yytokentype
+  {
+    _TOKEN = 258,
+    _STOKEN = 259,
+    _CRLF = 260,
+    SLASH = 261,
+    EQSIGN = 262,
+    LONE_CRLF = 263,
+    LWS = 264,
+    SEMICOLON = 265,
+    CONTENTTYPE = 266,
+    CONETNTCODEING = 267,
+    EXT_HEADER = 268
+  };
+#endif
 
-
+/* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE
+typedef union YYSTYPE YYSTYPE;
+union YYSTYPE
 {
-
-/* Line 2068 of yacc.c  */
-#line 36 "MIME_parse.y"
+#line 37 "MIME_parse.y" /* yacc.c:1909  */
 
   char *sv;
   char cv;
 
-
-
-/* Line 2068 of yacc.c  */
-#line 70 "MIME_parse_.tab.h"
-} YYSTYPE;
+#line 73 "MIME_parse_.tab.h" /* yacc.c:1909  */
+};
 # define YYSTYPE_IS_TRIVIAL 1
-# define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 #endif
 
+
 extern YYSTYPE MIME_parse_lval;
 
+int MIME_parse_parse (void);
 
+#endif /* !YY_MIME_PARSE_MIME_PARSE_TAB_H_INCLUDED  */

@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2005, 2015  Ericsson AB
+* Copyright (c) 2005, 2018  Ericsson AB
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -9,67 +9,88 @@
 * Gabor Szalai
 * Attila Balasko
 * Julianna Majer
+* Eduard Czimbalmos
 ******************************************************************************/
 //
 //  File:               MIME_Types.ttcn
-//  Rev:                R5A
+//  Rev:                R6A
 //  Prodnr:             CNL 113 352
 //  Reference:          RFC2045, RFC2046 
-module MIME_Types{
+module MIME_Types {
+
 external function f_MIME_Encode(in PDU_MIME_entity inent) return charstring;
 external function f_MIME_Decode(in charstring inent) return PDU_MIME_entity;
 
 external function  f_MIME_Base64_Encode(in octetstring inent) return charstring;
 external function  f_MIME_Base64_Decode(in charstring inent) return octetstring;
 external function  f_MIME_build_multipart(in PDU_MIME_entity_list entities,
-                                     in charstring delimiter) return charstring;
-external function  f_MIME_get_multipart(in PDU_MIME_entity inent) 
-                                                    return PDU_MIME_entity_list;
+  in charstring delimiter) return charstring;
+external function  f_MIME_get_multipart(in PDU_MIME_entity inent)
+return PDU_MIME_entity_list;
 
-  group InformationElements{
-      type record MIME_IE_Other_field{
-        charstring                  field_name,
-        charstring                  field_value
-      }
-      
-      type set of MIME_IE_Other_field MIME_FIELD_Other_field_list;
-      
-      type charstring MIME_FIELD_Content_encoding;
-      
-      type charstring MIME_FIELD_payload;
-      
-      type record MIME_FIELD_Content_type{
-        charstring                  content_type,
-        charstring                  subtype,
-        MIME_PARAM_parameter_list   parameters optional
-      }
+// functions to be used for decoding MIME bodies with binary contents
+external function f_MIME_Encode_binary(in PDU_MIME_entity_binary inent) return octetstring;
+external function f_MIME_Decode_binary(in octetstring inent) return PDU_MIME_entity_binary;
+external function f_MIME_build_multipart_binary(in PDU_MIME_entity_list_binary entities,
+  in charstring delimiter) return octetstring;
+external function  f_MIME_get_multipart_binary(in PDU_MIME_entity_binary inent)
+return PDU_MIME_entity_list_binary;
 
-      type record MIME_PARAM_parameter{
-        charstring                  param_name,
-        charstring                  param_value
-      }
-      
-      type set of MIME_PARAM_parameter MIME_PARAM_parameter_list;
-
-  } // InformationElements
-
-  group MessageDefinition{
-    type record ASP_MIME_message{
-      MIME_FIELD_Content_type       content_type optional,
-      MIME_FIELD_Content_encoding   content_encoding optional,
-      MIME_FIELD_Other_field_list   other_fields optional,
-      MIME_FIELD_payload            payload optional
-    }
-
-    type set of ASP_MIME_message ASP_MIME_message_list;
-  
-    type record PDU_MIME_entity{
-      MIME_FIELD_Content_type       content_type optional,
-      MIME_FIELD_Content_encoding   content_encoding optional,
-      MIME_FIELD_Other_field_list   other_fields optional,
-      MIME_FIELD_payload            payload optional
-    }
-    
-    type set of PDU_MIME_entity PDU_MIME_entity_list;
+group InformationElements{
+  type record MIME_IE_Other_field{
+    charstring                  field_name,
+    charstring                  field_value
   }
+
+  type set of MIME_IE_Other_field MIME_FIELD_Other_field_list;
+
+  type charstring MIME_FIELD_Content_encoding;
+
+  type charstring MIME_FIELD_payload;
+  type octetstring MIME_FIELD_payload_binary;
+
+  type record MIME_FIELD_Content_type{
+    charstring                  content_type,
+    charstring                  subtype,
+    MIME_PARAM_parameter_list   parameters optional
+  }
+
+  type record MIME_PARAM_parameter{
+    charstring                  param_name,
+    charstring                  param_value
+  }
+
+  type set of MIME_PARAM_parameter MIME_PARAM_parameter_list;
+
+} // InformationElements
+
+group MessageDefinition {
+  type record PDU_MIME_entity {
+    MIME_FIELD_Content_type       content_type optional,
+    MIME_FIELD_Content_encoding   content_encoding optional,
+    MIME_FIELD_Other_field_list   other_fields optional,
+    MIME_FIELD_payload            payload optional
+  }
+  type set of PDU_MIME_entity PDU_MIME_entity_list;
+  type PDU_MIME_entity_list ASP_MIME_message_list;
+
+  type record PDU_MIME_entity_binary {
+    MIME_FIELD_Content_type       content_type optional,
+    MIME_FIELD_Content_encoding   content_encoding optional,
+    MIME_FIELD_Other_field_list   other_fields optional,
+    MIME_FIELD_payload_binary     payload optional
+  }
+  type set of PDU_MIME_entity_binary PDU_MIME_entity_list_binary;
+  type PDU_MIME_entity_list_binary ASP_MIME_message_list_binary;
+}
+
+group Internal {
+  // types used by the encoder/decoder internally
+  type record MIME_entity_header {
+    MIME_FIELD_Content_type       content_type optional,
+    MIME_FIELD_Content_encoding   content_encoding optional,
+    MIME_FIELD_Other_field_list   other_fields optional
+  }
+}
+
 }

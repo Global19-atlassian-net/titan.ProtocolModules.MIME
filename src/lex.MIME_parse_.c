@@ -72,7 +72,6 @@ typedef int flex_int32_t;
 typedef unsigned char flex_uint8_t; 
 typedef unsigned short int flex_uint16_t;
 typedef unsigned int flex_uint32_t;
-#endif /* ! C99 */
 
 /* Limits of integral types. */
 #ifndef INT8_MIN
@@ -102,6 +101,8 @@ typedef unsigned int flex_uint32_t;
 #ifndef UINT32_MAX
 #define UINT32_MAX             (4294967295U)
 #endif
+
+#endif /* ! C99 */
 
 #endif /* ! FLEXINT_H */
 
@@ -159,7 +160,15 @@ typedef unsigned int flex_uint32_t;
 
 /* Size of default input buffer. */
 #ifndef YY_BUF_SIZE
+#ifdef __ia64__
+/* On IA-64, the buffer size is 16k, not 8k.
+ * Moreover, YY_BUF_SIZE is 2*YY_READ_BUF_SIZE in the general case.
+ * Ditto for the __ia64__ case accordingly.
+ */
+#define YY_BUF_SIZE 32768
+#else
 #define YY_BUF_SIZE 16384
+#endif /* __ia64__ */
 #endif
 
 /* The state buf must be large enough to hold one state per character in the main buffer.
@@ -5731,7 +5740,7 @@ char *MIME_parse_text;
 #line 1 "MIME_parse.l"
 #line 2 "MIME_parse.l"
 /******************************************************************************
-* Copyright (c) 2005, 2015  Ericsson AB
+* Copyright (c) 2005, 2018  Ericsson AB
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -5741,10 +5750,11 @@ char *MIME_parse_text;
 * Gabor Szalai
 * Attila Balasko
 * Julianna Majer
+* Eduard Czimbalmos
 ******************************************************************************/
 //
 //  File:               MIME_parse.l
-//  Rev:                R5A
+//  Rev:                R6A
 //  Prodnr:             CNL 113 352
 //  Reference:          RFC2045, RFC2046
 
@@ -5759,7 +5769,7 @@ int MIME_num_chars;
 
 
 
-#line 5763 "lex.MIME_parse_.c"
+#line 5773 "lex.MIME_parse_.c"
 
 #define INITIAL 0
 #define front 1
@@ -5841,7 +5851,12 @@ static int input (void );
 
 /* Amount of stuff to slurp up with each read. */
 #ifndef YY_READ_BUF_SIZE
+#ifdef __ia64__
+/* On IA-64, the buffer size is 16k, not 8k */
+#define YY_READ_BUF_SIZE 16384
+#else
 #define YY_READ_BUF_SIZE 8192
+#endif /* __ia64__ */
 #endif
 
 /* Copy whatever the last rule matched to the standard output. */
@@ -5849,7 +5864,7 @@ static int input (void );
 /* This used to be an fputs(), but since the string might contain NUL's,
  * we now use fwrite().
  */
-#define ECHO fwrite( MIME_parse_text, MIME_parse_leng, 1, MIME_parse_out )
+#define ECHO do { if (fwrite( MIME_parse_text, MIME_parse_leng, 1, MIME_parse_out )) {} } while (0)
 #endif
 
 /* Gets input and stuffs it into "buf".  number of characters read, or YY_NULL,
@@ -5926,9 +5941,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 102 "MIME_parse.l"
+#line 103 "MIME_parse.l"
 
-#line 5932 "lex.MIME_parse_.c"
+#line 5947 "lex.MIME_parse_.c"
 
 	if ( !(yy_init) )
 		{
@@ -6002,116 +6017,116 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 103 "MIME_parse.l"
+#line 104 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; BEGIN(INITIAL); return LONE_CRLF;
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 104 "MIME_parse.l"
+#line 105 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; BEGIN(tail); return CONTENTTYPE;
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 105 "MIME_parse.l"
+#line 106 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; BEGIN(tail); return CONETNTCODEING;
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 106 "MIME_parse.l"
+#line 107 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; BEGIN(other); MIME_parse_lval.sv=(char *)Malloc(MIME_parse_leng+1); strcpy(MIME_parse_lval.sv,MIME_parse_text); return EXT_HEADER;
 	YY_BREAK
 case 5:
 /* rule 5 can match eol */
 YY_RULE_SETUP
-#line 107 "MIME_parse.l"
+#line 108 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; BEGIN(INITIAL); return LONE_CRLF;
 	YY_BREAK
 case 6:
 /* rule 6 can match eol */
 YY_RULE_SETUP
-#line 108 "MIME_parse.l"
+#line 109 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; BEGIN(tail); return CONTENTTYPE;
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 109 "MIME_parse.l"
+#line 110 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; BEGIN(tail); return CONETNTCODEING;
 	YY_BREAK
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 110 "MIME_parse.l"
+#line 111 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; BEGIN(other); MIME_parse_lval.sv=(char *)Malloc(MIME_parse_leng+1); strcpy(MIME_parse_lval.sv,MIME_parse_text); return EXT_HEADER;
 	YY_BREAK
 case 9:
 /* rule 9 can match eol */
 YY_RULE_SETUP
-#line 111 "MIME_parse.l"
+#line 112 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; BEGIN(front); return _CRLF;
 	YY_BREAK
 case 10:
 /* rule 10 can match eol */
 YY_RULE_SETUP
-#line 112 "MIME_parse.l"
+#line 113 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; MIME_parse_lval.sv=(char *)Malloc(MIME_parse_leng+1); strcpy(MIME_parse_lval.sv,MIME_parse_text+1); MIME_parse_lval.sv[MIME_parse_leng-2]='\0'; return _TOKEN;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 113 "MIME_parse.l"
+#line 114 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; MIME_parse_lval.sv=(char *)Malloc(MIME_parse_leng+1); strcpy(MIME_parse_lval.sv,MIME_parse_text); return _TOKEN;
 	YY_BREAK
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 114 "MIME_parse.l"
+#line 115 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; return SEMICOLON;
 	YY_BREAK
 case 13:
 /* rule 13 can match eol */
 YY_RULE_SETUP
-#line 115 "MIME_parse.l"
+#line 116 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; return EQSIGN;
 	YY_BREAK
 case 14:
 /* rule 14 can match eol */
 YY_RULE_SETUP
-#line 116 "MIME_parse.l"
+#line 117 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; return SLASH;
 	YY_BREAK
 case 15:
 /* rule 15 can match eol */
 YY_RULE_SETUP
-#line 117 "MIME_parse.l"
+#line 118 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; MIME_parse_lval.sv=(char *)Malloc(MIME_parse_leng+1); strcpy(MIME_parse_lval.sv,MIME_parse_text); return _STOKEN;
 	YY_BREAK
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 118 "MIME_parse.l"
+#line 119 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng;  return LWS;
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 119 "MIME_parse.l"
+#line 120 "MIME_parse.l"
 MIME_num_chars+=MIME_parse_leng; MIME_parse_lval.cv=MIME_parse_text[0];  return MIME_parse_text[0];
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(front):
 case YY_STATE_EOF(tail):
 case YY_STATE_EOF(other):
-#line 121 "MIME_parse.l"
+#line 122 "MIME_parse.l"
 BEGIN(INITIAL); yyterminate();
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 122 "MIME_parse.l"
+#line 123 "MIME_parse.l"
 ECHO;
 	YY_BREAK
-#line 6115 "lex.MIME_parse_.c"
+#line 6130 "lex.MIME_parse_.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -6821,8 +6836,8 @@ YY_BUFFER_STATE MIME_parse__scan_string (yyconst char * yystr )
 
 /** Setup the input buffer state to scan the given bytes. The next call to MIME_parse_lex() will
  * scan from a @e copy of @a bytes.
- * @param bytes the byte buffer to scan
- * @param len the number of bytes in the buffer pointed to by @a bytes.
+ * @param yybytes the byte buffer to scan
+ * @param _yybytes_len the number of bytes in the buffer pointed to by @a bytes.
  * 
  * @return the newly allocated buffer state object.
  */
@@ -7061,7 +7076,7 @@ void MIME_parse_free (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 122 "MIME_parse.l"
+#line 123 "MIME_parse.l"
 
 
 #include "MIME_parse.h"

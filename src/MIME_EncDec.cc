@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2005, 2015  Ericsson AB
+* Copyright (c) 2005, 2018  Ericsson AB
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -9,10 +9,11 @@
 * Gabor Szalai
 * Attila Balasko
 * Julianna Majer
+* Eduard Czimbalmos
 ******************************************************************************/
 //
 //  File:               MIME_EncDec.cc
-//  Rev:                R5A
+//  Rev:                R6A
 //  Prodnr:             CNL 113 352
 //  Reference:          RFC2045, RFC2046 
 #include <string.h>
@@ -158,6 +159,29 @@ CHARSTRING f__MIME__build__multipart(const PDU__MIME__entity__list& entities,
   return ret_val;
 }
 
+OCTETSTRING f__MIME__build__multipart__binary(const PDU__MIME__entity__list__binary& entities,
+                                     const CHARSTRING& delimiter){
+  OCTETSTRING ret_val(0, NULL);
+  OCTETSTRING delimiter_oct = char2oct(delimiter), delimiter_withoutquotes_oct;
+  static OCTETSTRING double_dash = char2oct("--");
+  static OCTETSTRING return_new_line = char2oct("\r\n");
+  bool delimiter_startswith_quote = delimiter[0].get_char() == '"';
+  if(delimiter_startswith_quote) delimiter_withoutquotes_oct =
+      OCTETSTRING(delimiter_oct.lengthof()-2,(const unsigned char *)delimiter_oct+1);
+  for(int a = 0; a < entities.size_of(); a++){
+    ret_val += double_dash;
+    if(not delimiter_startswith_quote) ret_val += delimiter_oct;
+    else ret_val += delimiter_withoutquotes_oct;
+    ret_val += return_new_line;
+    ret_val += f__MIME__Encode__binary(entities[a]);
+  }
+  ret_val += double_dash;
+  if(not delimiter_startswith_quote) ret_val += delimiter_oct;
+  else ret_val += delimiter_withoutquotes_oct;
+  ret_val += double_dash;
+  return ret_val;
+}
+
 PDU__MIME__entity__list f__MIME__get__multipart(const PDU__MIME__entity &inent){
   char* delimiter=NULL;
   const char *begin;
@@ -189,7 +213,7 @@ PDU__MIME__entity__list f__MIME__get__multipart(const PDU__MIME__entity &inent){
   start=mbegin;
   mend=strstr(mbegin,delimiter);
   if(!mend){
-    TTCN_warning("The delimiter \"%s\" was not found!",delimiter);
+    TTCN_warning("The delimiter \"%s\" was not found in <%s>!", delimiter, begin);
     return ret_val;
   }
   while(more_part){
@@ -203,7 +227,7 @@ PDU__MIME__entity__list f__MIME__get__multipart(const PDU__MIME__entity &inent){
     mbegin++;
     mend=strstr(mbegin,delimiter);
     if(!mend){
-      TTCN_warning("The delimiter \"%s\" was not found!",delimiter);
+      TTCN_warning("The closing delimiter \"%s\" was not found in <%s>!", delimiter, mbegin);
       return ret_val;
     }
     data=CHARSTRING(mend-mbegin,begin+(mbegin-start));
@@ -213,6 +237,66 @@ PDU__MIME__entity__list f__MIME__get__multipart(const PDU__MIME__entity &inent){
     if(mend[del_length+2]=='-') break;
   }
   Free(delimiter);
+  Free(start);
+  return ret_val;
+}
+
+PDU__MIME__entity__list__binary f__MIME__get__multipart__binary(const PDU__MIME__entity__binary &inent){
+  char* delimiter=NULL;
+  const unsigned char *begin;
+  char *mbegin, *mend, *start;
+  bool more_part=true;
+  PDU__MIME__entity__list__binary ret_val(NULL_VALUE);
+  int del_length=0;
+  int num_ent=0;
+  for(int a=0;a<inent.content__type()().parameters()().size_of();a++){
+    if(!strcasecmp("boundary",
+         (const char*)inent.content__type()().parameters()()[a].param__name())){
+      del_length=
+            inent.content__type()().parameters()()[a].param__value().lengthof();
+      delimiter=(char *)Malloc((del_length+3)*sizeof(char));
+      delimiter[0]=delimiter[1]='-';
+      const char* atm=
+          (const char*)inent.content__type()().parameters()()[a].param__value();
+      if(*atm=='"') {atm++;del_length--;}
+      strcpy(delimiter+2,atm);
+      if(atm[del_length-1]=='"') delimiter[del_length+1]='\0';
+      break;
+    }
+  }
+  mbegin=(char*)Malloc(inent.payload()().lengthof()*sizeof(char));
+  begin=(const unsigned char*)inent.payload()();
+  for(int a=0;a<inent.payload()().lengthof();a++){
+    mbegin[a]=begin[a]?begin[a]:'A';
+  }
+  start=mbegin;
+  mend=strstr(mbegin,delimiter);
+  if(!mend){
+    TTCN_warning("The delimiter \"%s\" was not found in <%s>!", delimiter, begin);
+    return ret_val;
+  }
+  while(more_part){
+    OCTETSTRING data;
+    PDU__MIME__entity__binary val;
+    mbegin=strstr(mend,"\n");
+    if(!mbegin){
+      TTCN_warning("The CRLF was not found before the delimiter!");
+      return ret_val;
+    }
+    mbegin++;
+    mend=strstr(mbegin,delimiter);
+    if(!mend){
+      TTCN_warning("The closing delimiter \"%s\" was not found in <%s>!", delimiter, mbegin);
+      return ret_val;
+    }
+    data=OCTETSTRING(mend-mbegin,begin+(mbegin-start));
+    val=f__MIME__Decode__binary(data);
+    ret_val[num_ent]=val;
+    num_ent++;
+    if(mend[del_length+2]=='-') break;
+  }
+  Free(delimiter);
+  Free(start);
   return ret_val;
 }
 
@@ -255,20 +339,84 @@ CHARSTRING f__MIME__Encode(const PDU__MIME__entity& inent){
   return chr;
 }
 
-PDU__MIME__entity f__MIME__Decode(const CHARSTRING& inent){
-		PDU__MIME__entity ent;
-    ::MIME_parse_entity_ptr = &ent;
-    MIME_num_chars=0;
-    ent.content__type()=OMIT_VALUE;
-    ent.content__encoding()=OMIT_VALUE;
-    ent.other__fields()=OMIT_VALUE;
-    ent.payload()=OMIT_VALUE;
-    MIME_parse_debug=0;
-    MIME_parsing((const char*)inent,inent.lengthof());
-    if(MIME_num_chars<inent.lengthof()){
-      ent.payload()()=CHARSTRING(inent.lengthof()-MIME_num_chars-2,
-                                 (const char*)inent + MIME_num_chars);
+OCTETSTRING f__MIME__Encode__binary(const PDU__MIME__entity__binary& inent){
+  OCTETSTRING oct(0, NULL);
+  static OCTETSTRING return_new_line = char2oct("\r\n");
+
+  if(inent.content__type().ispresent()){
+    oct += char2oct("Content-Type: ");
+    oct += char2oct(inent.content__type()().content__type());
+    oct += char2oct("/");
+    oct += char2oct(inent.content__type()().subtype());
+
+    if(inent.content__type()().parameters().ispresent()){
+      for(int a=0;a<inent.content__type()().parameters()().size_of();a++){
+          oct += char2oct(";");
+          oct += char2oct(inent.content__type()().parameters()()[a].param__name());
+          oct += char2oct("=");
+          oct += char2oct(inent.content__type()().parameters()()[a].param__value());
+      }
     }
-    return ent;
-}  
+    oct += return_new_line;
+  }
+  if(inent.content__encoding().ispresent()){
+      oct += char2oct("Content-transfer-encoding: ");
+      oct += char2oct(inent.content__encoding()());
+      oct += return_new_line;
+  }
+  if(inent.other__fields().ispresent()){
+    for(int a=0;a<inent.other__fields()().size_of();a++){
+        oct += char2oct(inent.other__fields()()[a].field__name());
+        oct += char2oct(": ");
+        oct += char2oct(inent.other__fields()()[a].field__value());
+    }
+  }
+  oct += return_new_line;
+  if(inent.payload().ispresent()){
+    oct += inent.payload()()+return_new_line;
+  }
+
+  return oct;
+}
+
+PDU__MIME__entity f__MIME__Decode(const CHARSTRING& inent){
+  MIME__entity__header ent_header;
+  ::MIME_parse_entity_header_ptr = &ent_header;
+  PDU__MIME__entity ent;
+  MIME_num_chars=0;
+  ent_header.content__type()=OMIT_VALUE;
+  ent_header.content__encoding()=OMIT_VALUE;
+  ent_header.other__fields()=OMIT_VALUE;
+  MIME_parse_debug=0;
+  MIME_parsing((const char*)inent,inent.lengthof());
+  ent.content__type() = ent_header.content__type();
+  ent.content__encoding() = ent_header.content__encoding();
+  ent.other__fields() = ent_header.other__fields();
+  if(MIME_num_chars<inent.lengthof()){
+    ent.payload()()=CHARSTRING(inent.lengthof()-MIME_num_chars-2,
+                               (const char*)inent + MIME_num_chars);
+  }
+  return ent;
+}
+
+PDU__MIME__entity__binary f__MIME__Decode__binary(const OCTETSTRING& inent) {
+    MIME__entity__header ent_header;
+    ::MIME_parse_entity_header_ptr = &ent_header;
+    PDU__MIME__entity__binary ent_binary;
+    MIME_num_chars=0;
+    ent_header.content__type()=OMIT_VALUE;
+    ent_header.content__encoding()=OMIT_VALUE;
+    ent_header.other__fields()=OMIT_VALUE;
+    MIME_parse_debug=0;
+    MIME_parsing((const char*)(const unsigned char*)inent,inent.lengthof());
+    ent_binary.content__type() = ent_header.content__type();
+    ent_binary.content__encoding() = ent_header.content__encoding();
+    ent_binary.other__fields() = ent_header.other__fields();
+    if(MIME_num_chars<inent.lengthof()){
+        ent_binary.payload()()=OCTETSTRING(inent.lengthof()-MIME_num_chars-2,
+                                 (const unsigned char*)inent + MIME_num_chars);
+    }
+    return ent_binary;
+}
+
 }
