@@ -5740,11 +5740,11 @@ char *MIME_parse_text;
 #line 1 "MIME_parse.l"
 #line 2 "MIME_parse.l"
 /******************************************************************************
-* Copyright (c) 2005, 2018  Ericsson AB
+* Copyright (c) 2000-2018 Ericsson Telecom AB
 * All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
+* are made available under the terms of the Eclipse Public License v2.0
 * which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
+* https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.html
 *
 * Contributors:
 * Gabor Szalai
